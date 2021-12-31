@@ -6,37 +6,39 @@ clock = pygame.time.Clock()
 screenWidth, screenHeight = 512, 512
 screen = pygame.display.set_mode((screenWidth, screenHeight))
 space = []
-def Grid():
-    blockSize = 32 #Set the size of the grid block
-    for x in range(screenWidth):
-        for y in range(screenHeight):
-            rect = pygame.Rect(x*blockSize, y*blockSize,
-            blockSize, blockSize)
-            pygame.draw.rect(screen, grey, rect, 1)
-    for i in range(64):
-        space.append([])
-        for j in range(64):
-            space[i].append(0)
-winner = None
-
 
 # Colors
 red = (255, 0, 0)
 blue = (0, 0, 255)
 black = (0, 0, 0)
 white = (255,255,255)
-grey = (128,128,128,128)
+grey = (128,128,128,0)
 screen.fill(black)
+
+
+def Grid():
+    blockSize = 32 #Set the size of the grid block
+    for x in range(screenWidth): # this grid is purely for visual purposes
+        for y in range(screenHeight):
+            rect = pygame.Rect(x*blockSize, y*blockSize,
+            blockSize, blockSize)
+            pygame.draw.rect(screen, grey, rect, 1)
+    for i in range(64): # a grid to track where the player can go/has been
+        space.append([])
+        for j in range(64):
+            space[i].append(0)
+
+
+
 
 
 
 class Player:
     def __init__(self,x,y, color):
-
         self.x = x
         self.y = y
-        self.w = 8
-        self.h = 8
+        self.w = 4
+        self.h = 6
         self.color = color
         self.direction = 0
 
@@ -55,6 +57,9 @@ class Player:
                     print("test")
                     winner = f'{wintext} wins'
                     return None
+            # if two players are on the same grid square
+
+
                 space[self.x//8][self.y//8] = 1 # if the player is on a grid square, set the space to 1 (trail)
 
             keys = pygame.key.get_pressed()
@@ -87,64 +92,81 @@ class Player:
 
 
 def startMenu():
-    global winner
-    while winner == None:
+    global start
+    start = True
+    while start:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    running = True
+                    start = False
                     return None
+
         screen.fill(black)
         font = pygame.font.SysFont('Arial', 30)
         text = font.render('Press Space to start', True, white)
-        screen.blit(text, (50, 50))
+        screen.blit(text, (screenWidth/2 - text.get_width()/2, screenHeight/2 - text.get_height()/2))
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(15)
+
+
+
 
 
 player1 = Player(0,256,blue)
 player2 = Player(500,256,red)
 player2.direction = 2
-Grid()
+
+
 # Game Loop
-
+start = True
 running = True
-while running:
+winner = None
+def main():
+    global start
+    global running
+    global winner
+    screen.fill(black)
+    Grid()
+    while running:
+        if start:
+            startMenu()
 
-    if winner == None:
+        if winner == None:
+            if start == False:
 
 
     #init gameworld
 
-        player1.draw(screen)
-        player2.draw(screen)
+                player1.draw(screen)
+                player2.draw(screen)
 
 
-    # Process input (events)
-        for event in pygame.event.get():
-        # check for closing window
-            if event.type == pygame.QUIT:
-                running = False
-        player1.update(pygame.K_UP,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_DOWN,"red")
-        player2.update(pygame.K_w,pygame.K_a,pygame.K_d,pygame.K_s,"blue")
-        if winner != None:
-            pygame.font.init()
-            font = pygame.font.SysFont("Futura", 32)
-            wintext = font.render(winner,True,white)
-            screen.blit(wintext,(256,256, 256, 256))
-            pygame.display.flip()
-            pygame.time.delay(1000)
-            player1.reset()
-            player2.reset()
-            winner = None
+        # Process input (events)
+                for event in pygame.event.get():
+            # check for closing window
+                    if event.type == pygame.QUIT:
+                        running = False
+                player1.update(pygame.K_UP,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_DOWN,"red")
+                player2.update(pygame.K_w,pygame.K_a,pygame.K_d,pygame.K_s,"blue")
+                if winner != None:
+                    pygame.font.init()
+                    font = pygame.font.SysFont("Futura", 32)
+                    wintext = font.render(winner,True,white)
+                    screen.blit(wintext,(screenWidth/2, screenHeight/2))
+                    pygame.display.flip()
+                    pygame.time.delay(100)
+                    player1.reset()
+                    player2.reset()
+                    winner = None
 
 
 
-    # Update
-        pygame.display.flip()
-        clock.tick(60)
-
-
+        # Update
+                pygame.display.flip()
+                clock.tick(60)
+startMenu()
+main()
 pygame.quit()
